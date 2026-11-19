@@ -7,7 +7,7 @@ void main() {
 }
 
 class AppColors {
-  static const Color colorPrimary = Color(0xFF1565C0); // Airline Blue
+  static const Color colorPrimary = Color(0xFF1565C0);
   static const Color colorOnPrimary = Color(0xFFFFFFFF);
 }
 
@@ -42,23 +42,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Navigation menu index (0 = Home, 1 = About)
+  //(0 = Home, 1 = About)
   int selectedIndex = 0;
 
   // Controllers for the 2 numeric TextFields
   final TextEditingController weightController = TextEditingController();
   final TextEditingController rateController = TextEditingController();
 
-  // Variable for the non-textfield widget (Dropdown)
+  //Variable for the non-textfield widget (Dropdown)
   String selectedClass = 'Economy';
 
-  // Output and error message variables
+  //Output & error message variables
   String errorMessage = '';
   String excessWeightResult = '';
   String excessChargeResult = '';
   String totalPayableResult = '';
 
-  // TODO: Replace with your actual GitHub repository URL
+  // github
   final String githubUrl = 'https://github.com/2025423452-coder/excess_baggage_estimator.git';
 
   @override
@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final double? weight = double.tryParse(weightController.text.trim());
     final double? rate = double.tryParse(rateController.text.trim());
 
-    // Input validation (Error message)
+    //Input validation (Error message)
     if (weight == null || rate == null) {
       setState(() {
         errorMessage = 'Error: Please enter valid numbers for weight and rate.';
@@ -94,19 +94,29 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
-    // Determine free allowance (Economy = 20 kg, Business = 40 kg)
+    if (weight > 100) {
+      setState(() {
+        errorMessage = 'Error: Weight cannot be more than 100 kgs.';
+        excessWeightResult = '';
+        excessChargeResult = '';
+        totalPayableResult = '';
+      });
+      return;
+    }
+
+    //Determine free allowance (Economy = 20 kg, Business = 40 kg)
     double allowance = 20.0;
     if (selectedClass == 'Business') {
       allowance = 40.0;
     }
 
-    // Calculate excess weight (never negative)
+    //Calculate excess weight (never negative)
     double excessWeight = weight - allowance;
     if (excessWeight < 0) {
       excessWeight = 0.0;
     }
 
-    // Calculate charge and total with 8% service tax
+    //Calculate charge and total with 8% service tax
     double excessCharge = excessWeight * rate;
     double totalPayable = excessCharge + (0.08 * excessCharge);
 
@@ -115,6 +125,19 @@ class _MyHomePageState extends State<MyHomePage> {
       excessWeightResult = 'Excess Baggage Weight: ${excessWeight.toStringAsFixed(2)} kg';
       excessChargeResult = 'Excess Baggage Charge: RM ${excessCharge.toStringAsFixed(2)}';
       totalPayableResult = 'Total Amount Payable: RM ${totalPayable.toStringAsFixed(2)}';
+    });
+  }
+
+  //reset function
+  void resetFields() {
+    weightController.clear();
+    rateController.clear();
+    setState(() {
+      selectedClass = 'Economy';
+      errorMessage = '';
+      excessWeightResult = '';
+      excessChargeResult = '';
+      totalPayableResult = '';
     });
   }
 
@@ -157,35 +180,36 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // ================= HOME PAGE =================
+  //HOME PAGE
   Widget buildHomePage() {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Instructions (Good Design Practice)
+          //Instructions
           const Text(
             'Instructions: Enter your checked baggage weight, choose your ticket class, and enter the rate per kg to calculate excess fees.',
             style: TextStyle(fontSize: 14, color: Colors.black87),
           ),
           const SizedBox(height: 20),
 
-          // Input 1: Baggage Weight (TextField)
+          //Inputs
+          //Baggage Weight
           TextField(
             controller: weightController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: const InputDecoration(
-              labelText: 'Checked Baggage Weight (kg)',
+              labelText: 'Checked Baggage Weight (kg) (Limit : 100kg)',
               hintText: 'e.g. 25',
               border: OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
 
-          // Input 2: Ticket Class (Non-TextField widget: DropdownButtonFormField)
+          //Ticket Class
           DropdownButtonFormField<String>(
-            value: selectedClass,
+            initialValue: selectedClass,
             decoration: const InputDecoration(
               labelText: 'Ticket Class',
               border: OutlineInputBorder(),
@@ -202,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const SizedBox(height: 16),
 
-          // Input 3: Excess Rate per kg (TextField)
+          //Excess Rate per kg
           TextField(
             controller: rateController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -214,18 +238,28 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           const SizedBox(height: 24),
 
-          // Calculate Button
+          //Calculate Button
           FilledButton(
             onPressed: calculateFee,
             child: const Text('CALCULATE'),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 5),
 
-          // Error Message Display
+          //reset button
+          Center(
+            child: TextButton.icon(
+              onPressed: resetFields,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Reset Fields'),
+            ),
+          ),
+          const SizedBox(height: null),
+
+          //Error Message Display
           if (errorMessage.isNotEmpty)
             Text(
               errorMessage,
-              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15),
             ),
 
           // 3 Formatted Outputs Display
@@ -258,7 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
           const SizedBox(height: 20),
 
-          // Helpful Notice (Good Design Practice)
+          //Notice
           const Text(
             'Notice: Free baggage limit is 20 kg for Economy and 40 kg for Business. Excess weight is 0 kg if within limit. Total payable includes 8% service tax.',
             style: TextStyle(fontSize: 13, color: Colors.black54),
@@ -268,7 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  // ================= ABOUT PAGE =================
+  //ABOUT PAGE
   Widget buildAboutPage() {
     return Center(
       child: Padding(
@@ -276,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Application Icon
+            //App Icon
             Image.asset(
               'assets/app_icon.png',
               width: 90,
@@ -296,7 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 20),
 
-            // Author Information (Update with your own details)
+            //my Information
             const Text('Name: ', style: TextStyle(fontSize: 16), textAlign: TextAlign.center),
             const Text('MUHAMMAD HAIKAL BIN JASMY HAIRUDDIN', style: TextStyle(fontSize: 16), textAlign: TextAlign.center),
             const SizedBox(height: 6),
@@ -304,10 +338,10 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text('2025423452', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 6),
             const Text('Course:', style: TextStyle(fontSize: 16)),
-            const Text('ICT602 - Mobile Technology', style: TextStyle(fontSize: 16)),
+            const Text('ICT602 - MOBILE TECHNOLOGY AND DEVELOPMENT', style: TextStyle(fontSize: 16), textAlign: TextAlign.center,),
             const SizedBox(height: 20),
 
-            // Clickable GitHub Repository URL
+            //github link
             TextButton.icon(
               onPressed: openGitHubUrl,
               icon: const Icon(Icons.link),
@@ -319,7 +353,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 24),
 
-            // Copyright Notice
+            //copyright
             const Text(
               '© 2026 MUHAMMAD HAIKAL BIN JASMY HAIRUDDIN. All Rights Reserved.',
               style: TextStyle(fontSize: 13, color: Colors.black54),
